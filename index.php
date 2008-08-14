@@ -538,7 +538,7 @@ else
                     .imgbook-image { border: 1px solid {$imgbook['bordercolor']}; padding: 2px; }
                     .imgbook-infoframe { color: #222; }
                     .imgbook-infoframe th { color: #356AA0; text-align: right; }
-                    .imgbook-infoframe td { text-align: left; }
+                    td { text-align: left; }
                  </style>\n";
             /*
             echo ".imag { border-style : $borderstyle;";
@@ -693,7 +693,7 @@ else
             }
             $dateorig=str_replace(':','-',substr($imageexif['SubIFD']['DateTimeOriginal'],0,10)).substr($imageexif['SubIFD']['DateTimeOriginal'],10,strlen($imageexif['SubIFD']['DateTimeOriginal']));
             $datetaken=strtotime($dateorig);
-            echo "<th>Date Taken</th><td>".date('d M Y H:i', $datetaken)."</td></tr>";
+            if ($datetaken > 0) echo "<th>Date Taken</th><td>".date('d M Y H:i', $datetaken)."</td></tr>";
 
             if (!empty($imageexif['IFD0']['Make']))
             {
@@ -709,6 +709,7 @@ else
                 if (trim($imageexif['SubIFD']['MakerNote']['unknown:008f'])!='') echo "<th>Mode</th><td>{$imageexif['SubIFD']['MakerNote']['unknown:008f']}</td>";
                 echo "</tr>";
             }
+            $imageexif['COM']['Data'] = str_replace(chr(0), '', $imageexif['COM']['Data']);
             if (trim($imageexif['COM']['Data'])!='') echo "<tr><th>Comment</th><td>{$imageexif['COM']['Data']}</td></tr>";
 
         }
@@ -780,12 +781,10 @@ else
             for($i=($j*$dispimages);$i<(($j+1) * $dispimages);$i++)
             {
                 if ($i % $imgbook['imgperrow'] == 0 && $i > 1 && $c < $dispimages) echo "\n<!-- $c/ $dispimages /$imagecount --></tr>\n";
-                if ($c == $dispimages-1) echo "\n<!--end--></tr>\n";
+                if ($c == $dispimages) echo "\n<!--end--></tr>\n";
                 if ($i % $imgbook['imgperrow'] == 0) echo "\n<tr>\n";
                 if ($i < $imagecount)
                 {
-                
-                
                     $path = "{$_SERVER['PHP_SELF']}?ind=$i&amp;sub=$sub";
                     if ($imgbook['autosizing']) $path.="&amp;screenx=$screenx&amp;screeny=$screeny";
                     echo "<td>";
