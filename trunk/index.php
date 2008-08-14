@@ -135,6 +135,7 @@ $imgbook['header']           = "";
 $imgbook['footer']           = "";
 $imgbook['poweredby']        = TRUE;
 $imgbook['bordercolor']      = "#CCC;";
+$imgbook['subdirs']          = FALSE;
 
 // --- END of Configuration ----------------------------------------------------
 
@@ -476,6 +477,19 @@ else
             $imgbook[$key] = $descindex[$key];
         }
     }
+    
+    // Set a sensible title if there is none, based on the directory name
+    if (empty($imgbook['title']))
+    {
+        $search[] = '/';    $replace[] = '';
+        $search[] = '_';    $replace[] = ' ';
+        $search[] = '_';    $replace[] = ' ';
+        $search[] = '-';    $replace[] = ' - ';
+        $imgbook['title'] = ucwords(str_replace($search, $replace, $imgbookpath));
+        unset($search, $replace);
+    }
+
+
     if (!empty($imgbook['header']))
     {
         include($imgbook['header']);
@@ -776,15 +790,16 @@ else
         }
         echo "</p>";
     }
-
+    
     echo "<br />";
 
-
-    echo "<div style='width: 40%; text-align: left; margin-left: auto; margin-right: auto;'>";
-    // echo "<h3>Galleries:</h3>";
-    echo list_galleries($currentdir, 0, 0, '');
-    echo "</div>";
-
+    if ($imgbook['subdirs'])
+    {
+        echo "<div style='width: 40%; text-align: left; margin-left: auto; margin-right: auto;'>";
+        // echo "<h3>Galleries:</h3>";
+        echo list_galleries($currentdir, 0, 0, '');
+        echo "</div>";
+    }
     echo "</div>";
 }
 
