@@ -1,7 +1,7 @@
 <?php
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // NAME:
-//  ImgBook - gallery.php
+//  ImgBook - Single script PHP gallery - http://code.google.com/p/imgbook/
     $version=1.45;
 //
 // AUTHOR:
@@ -17,6 +17,7 @@
 //  Version
 //          1.45   14/08/08 Added optional headers/footer configuration
 //                          Added support for using PHPThumb to draw thumbnails
+//                          Made powered by optional
 //          1.44 - 20/11/05 Improved wording when there are no images
 //          1.43 - 25/10/05 Support for config vars in external file
 //          1.41 - 01/10/05 Better paging, support for title in external file
@@ -131,6 +132,7 @@ $imgbook['linksubdirs']      = TRUE;
 $imgbook['phpthumb']         = "../phpthumb/phpThumb.php";
 $imgbook['header']           = "";
 $imgbook['footer']           = "";
+$imgbook['poweredby']        = TRUE;
 
 // --- END of Configuration ----------------------------------------------------
 
@@ -139,10 +141,13 @@ $imgbook['footer']           = "";
 // Add localhost into referers list, so we always allow ourselves
 $okreferrers[]    = $_SERVER['HTTP_HOST'];
 
-if (empty($imgbookpath))
+
+if (empty($imgbook['webpath']))
 {
-    $imgbookpath = '/'.str_replace($_SERVER['DOCUMENT_ROOT'], '', str_replace('\\', '/', dirname(__FILE__))).'/';
+    $imgbookpath = dirname($_SERVER['REQUEST_URI']).'/';
+    // $imgbookpath = '/'.str_replace($_SERVER['DOCUMENT_ROOT'], '', str_replace('\\', '/', dirname($_SERVER['REQUEST_URI']))).'/';
 }
+else $imgbookpath = $imgbook['webpath'];
 $imagelist = array();
 $imagetypes = explode(',', $imgbook['imagetypes']);
 $downloadtypes = explode(',', $imgbook['downloadtypes']);
@@ -451,14 +456,17 @@ else
             $linetmp[0] = trim($linetmp[0]);
             $descindex[$linetmp[0]] = trim($linetmp[1]);
         }
-        //print_r($descindex);
     }
-    // Read config vars from index
+    // Read config vars from index.txt file
     foreach ($imgbook AS $key => $value)
     {
-            if (empty($value) AND !empty($descindex[$key])) $imgbook[$key] = $descindex[$key];
+        if (($value === '' OR $value === TRUE) AND $descindex[$key] != '')
+        {
+            if ($descindex[$key] == 'FALSE') $descindex[$key] = FALSE;
+            if ($descindex[$key] == 'TRUE') $descindex[$key] = TRUE;
+            $imgbook[$key] = $descindex[$key];
+        }
     }
-
     if (!empty($imgbook['header']))
     {
         include($imgbook['header']);
@@ -771,7 +779,7 @@ if ($imgbook['autosizing'])
 }
 echo "</p>";
 echo "</form>";
-echo "<p align='center'>Powered by ImgBook v{$version}</p>";
+if ($imgbook['poweredby']) echo "<p align='center' style='font-size: 12px; color: #ccc;' class='imgbook-poweredby'>Powered by ImgBook v{$version}</p>";
 echo "<script language=\"JavaScript\" type=\"text/javascript\"><!--\n";
 echo "var height, width;\n";
 echo "if (document.all)\n";  // IE
