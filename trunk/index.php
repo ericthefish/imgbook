@@ -59,6 +59,7 @@
 //  allow user to select where next/prev links go
 //  Proper mime types for downloads
 //  Make a function for reading index.txt rather than doing it twice
+// Don't show filenames in list for secure mode
 //
 // DESCRIPTION:
 //  Drop this file in any directory that you want and it automaticaly generates
@@ -134,7 +135,7 @@ $imgbook['filename_suffix']  = "";
 $imgbook['linksubdirs']      = TRUE;
 $imgbook['phpthumb']         = "../phpthumb/phpThumb.php";
 $imgbook['exif']             = "../exif/exif.php";
-$imgbook['header']           = "";
+$imgbook['header']           = "header.php";
 $imgbook['footer']           = "";
 $imgbook['poweredby']        = TRUE;
 $imgbook['bordercolor']      = "#CCC;";
