@@ -146,10 +146,15 @@ $okreferrers[]    = $_SERVER['HTTP_HOST'];
 
 if (empty($imgbook['webpath']))
 {
-    $imgbookpath = dirname($_SERVER['REQUEST_URI']).'/';
+    if (substr($_SERVER['REQUEST_URI'], -1) == '/') 
+    {
+        $imgbookpath = $_SERVER['REQUEST_URI'];
+    }
+    else $imgbookpath = dirname($_SERVER['REQUEST_URI']) . '/';
     // $imgbookpath = '/'.str_replace($_SERVER['DOCUMENT_ROOT'], '', str_replace('\\', '/', dirname($_SERVER['REQUEST_URI']))).'/';
 }
 else $imgbookpath = $imgbook['webpath'];
+
 $imagelist = array();
 $imagetypes = explode(',', $imgbook['imagetypes']);
 $downloadtypes = explode(',', $imgbook['downloadtypes']);
