@@ -58,6 +58,7 @@
 //  XHTML 1.0 Conformity
 //  allow user to select where next/prev links go
 //  Proper mime types for downloads
+//  Make a function for reading index.txt rather than doing it twice
 //
 // DESCRIPTION:
 //  Drop this file in any directory that you want and it automaticaly generates
@@ -96,6 +97,7 @@
 //
 // USAGE:
 //  to browse through the images use the back and forward images
+// image_type_to_mime_type()
 //  click on one of the thumbnails
 //  or use one of the pagelinks to go directly to another set of images
 //  clicking on the large image will give you the full image
@@ -496,7 +498,7 @@ else
         $imgbook['title'] = ucwords(str_replace($search, $replace, $imgbookpath));
         unset($search, $replace);
     }
-    //     echo "<pre>".print_r($imgbook,true)."</pre>";
+//         echo "<pre>".print_r($imgbook,true)."</pre>";
 
     if (!empty($imgbook['phpthumb']) AND !file_exists($imgbook['phpthumb'])) $imgbook['phpthumb'] = '';
     if (!empty($imgbook['exif']) AND !file_exists($imgbook['exif'])) $imgbook['exif'] = '';
@@ -732,7 +734,7 @@ else
                 $linetmp[0]=trim($linetmp[0]);
                 $descindex[$linetmp[0]]=trim($linetmp[1]);
             }
-            // print_r($descindex);
+//              print_r($descindex);
         }
         echo "<div class='imgbook-thumbnails'>";
         if (!empty($imgbook['title'])) echo "<h2 class='imgbook'>{$imgbook['title']}</h2>";
