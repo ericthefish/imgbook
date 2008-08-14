@@ -137,6 +137,7 @@ $imgbook['footer']           = "";
 $imgbook['poweredby']        = TRUE;
 $imgbook['bordercolor']      = "#CCC;";
 $imgbook['subdirs']          = FALSE;
+$imgbook['secure']           = TRUE;
 
 // --- END of Configuration ----------------------------------------------------
 
@@ -449,6 +450,14 @@ elseif (extension_loaded('gd') && $_REQUEST['draw']=='thumb')
         imagepng($dst_img);
     }
 }
+elseif ($_REQUEST['draw']=='pt')
+{
+    if (is_file($imagelist[$index]))
+    {
+        header("content-type: image/png");
+        readfile($imagelist[$index]);
+    }
+}
 else
 {
     // Look for an index.txt file which contains filenames, one or more spaces and a description (one per line)
@@ -608,6 +617,10 @@ else
                 if ($imgbook['autosizing']) echo "&amp;screenx=$screenx&amp;screeny=$screeny";
                 echo "\" width='{$imageinfo['0']}' height='{$imageinfo['1']}' class=\"imgbook-image\" alt=\"Image $index\">";
             }
+            elseif ($imgbook['secure'] == TRUE)
+            {
+                echo "<img src=\"{$PHP_SELF}?ind={$index}&amp;draw=pt\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
+            }
             else
             {
                 echo "<img src=\"{$imagelist[$index]}\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
@@ -652,7 +665,11 @@ else
             readfile($txtfilename);
             echo "</td></tr>";
         }
-        echo "<tr><th>Image</th><td>{$imagelist[$index]} (".($index+1)." of ".($imagecount).")</td>";
+        echo "<tr><th>Image</th><td>";
+        if ($imgbook['secure'] !== TRUE) echo "{$imagelist[$index]} (".($index+1)." of ".($imagecount).")";
+        else echo "".($index+1)." of ".($imagecount);
+
+        echo "</td>";
         echo "<th>Date Modified</th><td>".date('d M Y H:i',filemtime($imagelist[$index]))."</td>";
         echo "<tr><th>Dimensions</th><td>{$imageinfo['0']} x {$imageinfo['1']}, {$imageinfo['bits']} bit</td>";
         if (file_exists($imgbook['exif']))
