@@ -131,6 +131,7 @@ $imgbook['filename_prefix']  = "imgbook-";
 $imgbook['filename_suffix']  = "";
 $imgbook['linksubdirs']      = TRUE;
 $imgbook['phpthumb']         = "../phpthumb/phpThumb.php";
+$imgbook['exif']             = "../exif/exif.php";
 $imgbook['header']           = "";
 $imgbook['footer']           = "";
 $imgbook['poweredby']        = TRUE;
@@ -162,8 +163,6 @@ $downloadtypes = explode(',', $imgbook['downloadtypes']);
 $typelist = $imagetypes + $downloadtypes;
 $currentdir = getcwd();
 $okreferrers = explode(',', $imgbook['okreferrers']);
-
-if (!empty($imgbook['phpthumb']) AND !file_exists($imgbook['phpthumb'])) $imgbook['phpthumb'] = '';
 
 $mimetype['png'] = 'image/png';
 $mimetype['jpg'] = 'image/jpeg';
@@ -470,7 +469,7 @@ else
     // Read config vars from index.txt file
     foreach ($imgbook AS $key => $value)
     {
-        if (($value === '' OR $value === TRUE) AND $descindex[$key] != '')
+        if (($value !== '' OR $value === TRUE) AND $descindex[$key] != '')
         {
             if ($descindex[$key] == 'FALSE') $descindex[$key] = FALSE;
             if ($descindex[$key] == 'TRUE') $descindex[$key] = TRUE;
@@ -488,7 +487,10 @@ else
         $imgbook['title'] = ucwords(str_replace($search, $replace, $imgbookpath));
         unset($search, $replace);
     }
+    //     echo "<pre>".print_r($imgbook,true)."</pre>";
 
+    if (!empty($imgbook['phpthumb']) AND !file_exists($imgbook['phpthumb'])) $imgbook['phpthumb'] = '';
+    if (!empty($imgbook['exif']) AND !file_exists($imgbook['exif'])) $imgbook['exif'] = '';
 
     if (!empty($imgbook['header']))
     {
@@ -580,7 +582,25 @@ else
         $basefilename=explode('.',$imagelist[$index]);
         if (in_array($basefilename['1'], $imagetypes))
         {
-            echo "<div class='imgbook-imageframe'>";
+//                 $width=$imageinfo['0'] < $imgbook['maxwidth'] ? $imageinfo['0'] : $imgbook['maxwidth'];
+//                 $height=$imageinfo['1'] < $imgbook['maxheight'] ? $imageinfo['1'] : $imgbook['maxheight'];
+            $width = $imageinfo['0'];
+            $height = $imageinfo['1']; 
+
+            echo "<div class='imgbook-imageframe'";
+            if ($width >  $imgbook['maxwidth'] AND $height > $imgbook['maxheight'])
+            {
+                echo " style = 'width: {$imgbook['maxwidth']}px; height: {$imgbook['maxheight']}px; overflow: auto;'";
+            }
+            elseif ($width >  $imgbook['maxwidth'] AND $height <= $imgbook['maxheight'])
+            {
+                echo " style = 'width: {$imgbook['maxwidth']}px; height: {$imageinfo['1']}px; overflow: auto;'";
+            }
+            elseif ($width <=  $imgbook['maxwidth'] AND $height > $imgbook['maxheight'])
+            {
+                echo " style = 'width: {$imageinfo['0']}px; height: {$imgbook['maxheight']}px; overflow: auto;'";
+            }
+            echo ">";
             // echo "<a href=\"{$imagelist[$index]}\" target=\"_blank\">";
             if (extension_loaded('gd') && $imgbook['gdlargeimages']==TRUE)
             {
@@ -590,13 +610,12 @@ else
             }
             else
             {
-                $width=$imageinfo['0'] < $imgbook['maxwidth'] ? $imageinfo['0'] : $imgbook['maxwidth'];
-                $height=$imageinfo['1'] < $imgbook['maxheight'] ? $imageinfo['1'] : $imgbook['maxheight'];
                 echo "<img src=\"{$imagelist[$index]}\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
-                if ($imageinfo['0']>$imgbook['maxwidth'] OR $imageinfo['1'] > $imgbook['maxheight']) echo "<p><a href='$imagelist[$index]'>View full sized image ({$imageinfo['0']}x{$imageinfo['1']})</a></p>";
             }
-            // echo "</a>";
             echo "</div>";
+            if ($imageinfo['0']>$imgbook['maxwidth'] OR $imageinfo['1'] > $imgbook['maxheight']) echo "<p class='imgbook-navi'><a href='$imagelist[$index]'>View full sized image ({$imageinfo['0']}x{$imageinfo['1']})</a></p>";
+            // echo "</a>";
+
         }
         else
         {
@@ -636,9 +655,9 @@ else
         echo "<tr><th>Image</th><td>{$imagelist[$index]} (".($index+1)." of ".($imagecount).")</td>";
         echo "<th>Date Modified</th><td>".date('d M Y H:i',filemtime($imagelist[$index]))."</td>";
         echo "<tr><th>Dimensions</th><td>{$imageinfo['0']} x {$imageinfo['1']}, {$imageinfo['bits']} bit</td>";
-        if (file_exists('exif.php'))
+        if (file_exists($imgbook['exif']))
         {
-            include('exif.php');
+            include($imgbook['exif']);
             $verbose = 0;
             $imageexif = read_exif_data_raw($imagelist[$index],$verbose);
             if ($_REQUEST['debug'])
