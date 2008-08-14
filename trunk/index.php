@@ -450,7 +450,7 @@ elseif (extension_loaded('gd') && $_REQUEST['draw']=='thumb')
         imagepng($dst_img);
     }
 }
-elseif ($_REQUEST['draw']=='pt')
+elseif ($_REQUEST['draw']=='normal')
 {
     if (is_file($imagelist[$index]))
     {
@@ -537,7 +537,8 @@ else
                     .imgbook-imageframe {  }
                     .imgbook-image { border: 1px solid {$imgbook['bordercolor']}; padding: 2px; }
                     .imgbook-infoframe { color: #222; }
-                    .imgbook-infoframe th { color: #356AA0; }
+                    .imgbook-infoframe th { color: #356AA0; text-align: right; }
+                    .imgbook-infoframe td { text-align: left; }
                  </style>\n";
             /*
             echo ".imag { border-style : $borderstyle;";
@@ -619,14 +620,20 @@ else
             }
             elseif ($imgbook['secure'] == TRUE)
             {
-                echo "<img src=\"{$PHP_SELF}?ind={$index}&amp;draw=pt\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
+                echo "<img src=\"{$PHP_SELF}?ind={$index}&amp;draw=normal\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
             }
             else
             {
                 echo "<img src=\"{$imagelist[$index]}\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
             }
             echo "</div>";
-            if ($imageinfo['0']>$imgbook['maxwidth'] OR $imageinfo['1'] > $imgbook['maxheight']) echo "<p class='imgbook-navi'><a href='$imagelist[$index]'>View full sized image ({$imageinfo['0']}x{$imageinfo['1']})</a></p>";
+            if ($imageinfo['0']>$imgbook['maxwidth'] OR $imageinfo['1'] > $imgbook['maxheight']) 
+            {
+                if ($imgbook['secure'] !== TRUE) $bigurl = $imagelist[$index];
+                else $bigurl = "{$PHP_SELF}?ind={$index}&amp;draw=normal";
+                echo "<p class='imgbook-navi'><a href='{$bigurl}'>View full sized image ({$imageinfo['0']}x{$imageinfo['1']})</a></p>";
+                unset($bigurl);
+            }
             // echo "</a>";
 
         }
