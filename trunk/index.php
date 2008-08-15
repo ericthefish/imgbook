@@ -194,6 +194,25 @@ function check_referrer()
 }
 
 
+function create_img_url($index, $offset='', $sub='', $draw='', $filename='')
+{
+    if ($index === '' AND $offset === '' AND $sub === '' AND $draw === '') $url = "{$SERVER['PHP_SELF']}";
+    elseif (is_numeric($index))
+    {
+        $url = "?i={$index}";
+        if (!empty($filename))
+        {
+            $extension = explode(".",$filename);
+            $extension = strtolower($extension['1']);
+            $url .= ".{$extension}";
+        }
+        else $url .= ".jpg";
+    }
+
+    return $url;
+}
+
+
 function draw_thumbnail($index)
 {
     global $imgbook, $imgbookpath, $imagelist, $sub;
@@ -205,8 +224,11 @@ function draw_thumbnail($index)
         // Check to see if phpthumb is configured
         if (!empty($imgbook['phpthumb']))
         {
-            $html .= "<a href='{$_REQUEST['PHP_SELF']}?ind={$index}&amp;sub={$sub}' title='{$imagelist[$i]}'>";
-            $html .= "<img src='{$imgbook['phpthumb']}?src={$imgbookpath}{$imagelist[$index]}&amp;w={$imgbook['thumbnailwidth']}&amp;h={$imgbook['thumbnailheight']}&amp;zc=C' width='{$imgbook['thumbnailwidth']}' height='{$imgbook['thumbnailheight']}' class='imgbook-thumb' alt='' /></a>" ;
+            // {$_REQUEST['PHP_SELF']}?ind={$index}&amp;sub={$sub}
+            $html .= "<a href='".create_img_url($index, NULL, $sub, NULL, $imagelist[$index])."' title='{$imagelist[$i]}'>";
+            $url = "{$imgbookpath}{$imagelist[$index]}";
+            $html .= "<img src='{$imgbook['phpthumb']}?src={$url}&amp;w={$imgbook['thumbnailwidth']}&amp;h={$imgbook['thumbnailheight']}&amp;zc=C' width='{$imgbook['thumbnailwidth']}' height='{$imgbook['thumbnailheight']}' class='imgbook-thumb' alt='' /></a>" ;
+            unset($url);
         }
         elseif (extension_loaded('gd') && $imgbook['gdthumbnails'])
         {
@@ -269,9 +291,33 @@ function list_galleries($dirname, $level, $recursive = 1, $content = '')
 
 // --- Set index to 0 for first run ---
 ## if (!isset($_REQUEST['ind'])) $index = 0;
-$index = $_REQUEST['ind'];
-$offset = $_REQUEST['offset'];
-$sub = $_REQUEST['sub'];
+
+// Parameters
+if (!empty($_REQUEST['i']))
+{
+    $filename = substr($_REQUEST['i'], 0, strpos($_REQUEST['i'], '.'));
+    if (is_numeric($filename))
+    {
+        $index = $filename;
+        $draw = 'normal';
+    }
+    else
+    {
+        $index = substr($filename, 1, -1);
+        switch (substr($filename, 0, 1))
+        {
+            default:
+                $draw = 'normal';
+        }
+    }
+}
+else
+{
+    $index = $_REQUEST['ind'];
+    $offset = $_REQUEST['offset'];
+    $sub = $_REQUEST['sub'];
+}
+
 if (!empty($sub)) $subdir=substr($sub,1,strlen($sub))."/";
 else $subdir='';
 
@@ -311,7 +357,7 @@ if ($imgbook['imgperpage'] == 0) $nrpages=1;
 else $nrpages = ceil( $imagecount / $imgbook['imgperpage'] );
 
 
-if (extension_loaded('gd') && $_REQUEST['draw']=='full')
+if (extension_loaded('gd') && $draw == 'full')
 {
     if (empty($imagelist[$index])) die('No File');
 
@@ -431,7 +477,7 @@ if (extension_loaded('gd') && $_REQUEST['draw']=='full')
         Imagepng($gfx);
     }
 }
-elseif (extension_loaded('gd') && $_REQUEST['draw']=='thumb')
+elseif (extension_loaded('gd') && $draw == 'thumb')
 {
     check_referrer();
     if (is_file($imagelist[$index]))
@@ -453,7 +499,7 @@ elseif (extension_loaded('gd') && $_REQUEST['draw']=='thumb')
         imagepng($dst_img);
     }
 }
-elseif ($_REQUEST['draw']=='normal')
+elseif ($draw == 'normal')
 {
     if (is_file($imagelist[$index]))
     {
@@ -481,13 +527,15 @@ else
     // Read config vars from index.txt file
     foreach ($imgbook AS $key => $value)
     {
-        if (($value !== '' OR $value === TRUE) AND $descindex[$key] != '')
+        if ($descindex[$key] != '')
         {
             if ($descindex[$key] == 'FALSE') $descindex[$key] = FALSE;
             if ($descindex[$key] == 'TRUE') $descindex[$key] = TRUE;
             $imgbook[$key] = $descindex[$key];
         }
     }
+
+    if ($_REQUEST['debug']) echo "<pre>".print_r($descindex,true)."</pre>";
     
     // Set a sensible title if there is none, based on the directory name
     if (empty($imgbook['title']))
@@ -499,10 +547,7 @@ else
         $imgbook['title'] = ucwords(str_replace($search, $replace, substr($imgbookpath, strrpos(substr($imgbookpath, 0, -1), '/'), -1)));
         unset($search, $replace);
     }
-//         echo "<pre>".print_r($imgbook,true)."</pre>";
-
-    if (!empty($imgbook['phpthumb']) AND !file_exists($imgbook['phpthumb'])) $imgbook['phpthumb'] = '';
-    if (!empty($imgbook['exif']) AND !file_exists($imgbook['exif'])) $imgbook['exif'] = '';
+    if ($_REQUEST['debug'])  echo "<pre>".print_r($imgbook,true)."</pre>";
 
     if (!empty($imgbook['header']))
     {
@@ -623,7 +668,9 @@ else
             }
             elseif ($imgbook['secure'] == TRUE)
             {
-                echo "<img src=\"{$PHP_SELF}?ind={$index}&amp;draw=normal\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
+                $url = create_img_url($index, '', '', 'normal');
+                // {$PHP_SELF}?ind={$index}&amp;draw=normal
+                echo "<img src=\"{$url}\" class=\"imgbook-image\" width='$width' height='$height' alt=\"Image $index\" />\n";
             }
             else
             {
@@ -675,13 +722,14 @@ else
             readfile($txtfilename);
             echo "</td></tr>";
         }
-        echo "<tr><th>Image</th><td>";
+        echo "<tr>";
+        echo "<th>Image</th>";
+        echo "<td>";
         if ($imgbook['secure'] !== TRUE) echo "{$imagelist[$index]} (".($index+1)." of ".($imagecount).")";
         else echo "".($index+1)." of ".($imagecount);
-
         echo "</td>";
-        echo "<th>Date Modified</th><td>".date('d M Y H:i',filemtime($imagelist[$index]))."</td>";
-        echo "<tr><th>Dimensions</th><td>{$imageinfo['0']} x {$imageinfo['1']}, {$imageinfo['bits']} bit</td>";
+        echo "<th>Date Modified</th><td>".date('d M Y H:i',filemtime($imagelist[$index]))."</td></tr>";
+        echo "<tr><th>Dimensions</th><td>{$imageinfo['0']} x {$imageinfo['1']}, {$imageinfo['bits']} bit</td></tr>";
         if (file_exists($imgbook['exif']))
         {
             include($imgbook['exif']);
@@ -689,9 +737,9 @@ else
             $imageexif = read_exif_data_raw($imagelist[$index],$verbose);
             if ($_REQUEST['debug'])
             {
-            echo "<tr><th>EXIF</th><td><pre>";
-            print_r($imageexif);
-            echo "</pre></td></tr>";
+                echo "<tr><th>EXIF</th><td><pre>";
+                print_r($imageexif);
+                echo "</pre></td></tr>";
 
             }
             $dateorig=str_replace(':','-',substr($imageexif['SubIFD']['DateTimeOriginal'],0,10)).substr($imageexif['SubIFD']['DateTimeOriginal'],10,strlen($imageexif['SubIFD']['DateTimeOriginal']));
