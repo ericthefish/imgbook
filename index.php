@@ -135,7 +135,7 @@ $imgbook['filename_suffix']  = "";
 $imgbook['linksubdirs']      = TRUE;
 $imgbook['phpthumb']         = "../phpthumb/phpThumb.php";
 $imgbook['exif']             = "../exif/exif.php";
-$imgbook['header']           = "header.php";
+$imgbook['header']           = "";
 $imgbook['footer']           = "";
 $imgbook['poweredby']        = TRUE;
 $imgbook['bordercolor']      = "#CCC;";
@@ -496,7 +496,7 @@ else
         $search[] = '_';    $replace[] = ' ';
         $search[] = '_';    $replace[] = ' ';
         $search[] = '-';    $replace[] = ' - ';
-        $imgbook['title'] = ucwords(str_replace($search, $replace, $imgbookpath));
+        $imgbook['title'] = ucwords(str_replace($search, $replace, substr($imgbookpath, strrpos(substr($imgbookpath, 0, -1), '/'), -1)));
         unset($search, $replace);
     }
 //         echo "<pre>".print_r($imgbook,true)."</pre>";
@@ -724,16 +724,16 @@ else
         // Look for an index.txt file which contains filenames, one or more spaces and a description (one per line)
         if (file_exists("index.txt"))
         {
-            $indexstr=file_get_contents("index.txt");
-            $indexlines=nl2br($indexstr);
-            $indexlines=explode("<br />", $indexlines);
+            $indexstr = file_get_contents("index.txt");
+            $indexlines = nl2br($indexstr);
+            $indexlines = explode("<br />", $indexlines);
             foreach ($indexlines AS $linekey => $line)
             {
-                $linetmp=explode(" ",$line, 2);
+                $linetmp = explode(" ",$line, 2);
                 //print_r($linetmp);
                 // $linetmp=preg_split("/{\s}3/",$line);
-                $linetmp[0]=trim($linetmp[0]);
-                $descindex[$linetmp[0]]=trim($linetmp[1]);
+                $linetmp[0] = trim($linetmp[0]);
+                $descindex[$linetmp[0]] = trim($linetmp[1]);
             }
 //              print_r($descindex);
         }
@@ -824,7 +824,7 @@ else
         for($j=0;$j<$nrpages;$j++)
         {
             echo "[<a href='{$_SERVER['PHP_SELF']}?ind=index&amp;offset=".($j * $imgbook['imgperpage']);
-        if (!empty($sub)) echo "&amp;sub=$sub";
+            if (!empty($sub)) echo "&amp;sub=$sub";
             if ($imgbook['autosizing']) echo "&amp;screenx=$screenx&amp;screeny=$screeny";
             echo "'>";
             if ($_REQUEST['offset']==($j * $imgbook['imgperpage'])) echo "<strong>";
