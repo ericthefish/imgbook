@@ -199,7 +199,14 @@ function create_img_url($index, $offset='', $sub='', $draw='', $filename='')
     if ($index === '' AND $offset === '' AND $sub === '' AND $draw === '') $url = "{$SERVER['PHP_SELF']}";
     elseif (is_numeric($index))
     {
-        $url = "?i={$index}";
+        $url = "?i=";
+        switch ($draw)
+        {
+            case 'thumb': $url .= 'T'; break;
+            case 'full': $url .= 'F'; break;
+            case 'normal': $url .= 'N'; break;
+        }
+        $url .= "{$index}";
         if (!empty($filename))
         {
             $extension = explode(".",$filename);
@@ -299,23 +306,28 @@ if (!empty($_REQUEST['i']))
     if (is_numeric($filename))
     {
         $index = $filename;
-        $draw = 'normal';
+        $draw = 'page';
     }
     else
     {
-        $index = substr($filename, 1, -1);
+        $index = substr($filename, 1);
         switch (substr($filename, 0, 1))
         {
+            case 'N': $draw = 'normal'; break;
+            case 'F': $draw = 'full';  break;
+            case 'T': $draw = 'thumb'; break;
             default:
                 $draw = 'normal';
         }
     }
+    unset($filename);
 }
 else
 {
     $index = $_REQUEST['ind'];
     $offset = $_REQUEST['offset'];
     $sub = $_REQUEST['sub'];
+    $draw = $_REQUEST['draw'];
 }
 
 if (!empty($sub)) $subdir=substr($sub,1,strlen($sub))."/";
@@ -501,10 +513,16 @@ elseif (extension_loaded('gd') && $draw == 'thumb')
 }
 elseif ($draw == 'normal')
 {
+//     check_referrer();
+
     if (is_file($imagelist[$index]))
     {
         header("content-type: image/png");
         readfile($imagelist[$index]);
+    }
+    else
+    {
+        die('No such image');
     }
 }
 else
