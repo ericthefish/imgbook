@@ -109,6 +109,7 @@
 
 // --- Configuration -----------------------------------------------------------
 $imgbook['title']            = "";
+$imgbook['summary']            = "";
 $imgbook['subtitle']         = "";
 $imgbook['imgperpage']       = 42;
 $imgbook['imgperrow']        = 7;
@@ -234,7 +235,8 @@ function draw_thumbnail($index)
             // {$_REQUEST['PHP_SELF']}?ind={$index}&amp;sub={$sub}
             $html .= "<a href='".create_img_url($index, NULL, $sub, NULL, $imagelist[$index])."' title='{$imagelist[$i]}'>";
             $url = "{$imgbookpath}{$imagelist[$index]}";
-            $html .= "<img src='{$imgbook['phpthumb']}?src={$url}&amp;w={$imgbook['thumbnailwidth']}&amp;h={$imgbook['thumbnailheight']}&amp;zc=C' width='{$imgbook['thumbnailwidth']}' height='{$imgbook['thumbnailheight']}' class='imgbook-thumb' alt='' /></a>" ;
+            // $html .= "<img src='{$imgbook['phpthumb']}?src={$url}&amp;w={$imgbook['thumbnailwidth']}&amp;h={$imgbook['thumbnailheight']}&amp;zc=C' width='{$imgbook['thumbnailwidth']}' height='{$imgbook['thumbnailheight']}' class='imgbook-thumb' alt='' /></a>" ;
+            $html .= "<img src='{$imgbook['phpthumb']}?src={$url}&w={$imgbook['thumbnailwidth']}&h={$imgbook['thumbnailheight']}&zc=C' width='{$imgbook['thumbnailwidth']}' height='{$imgbook['thumbnailheight']}' class='imgbook-thumb' alt='' /></a>" ;
             unset($url);
         }
         elseif (extension_loaded('gd') && $imgbook['gdthumbnails'])
@@ -639,7 +641,8 @@ else
     {
         if (!empty($descindex[$imagelist[$index]]))
         {
-            echo "<div style='font-size: 180%; padding-left: 50px; padding-right: 50px; padding-bottom: 5px; text-align: center; color: #9AD7F5;'>{$descindex[$imagelist[$index]]}</div>";
+            //echo "<div style='font-size: 180%; padding-left: 50px; padding-right: 50px; padding-bottom: 5px; text-align: center; color: #9AD7F5;'>{$descindex[$imagelist[$index]]}</div>";
+            echo "<h2 class='imgbook'>{$descindex[$imagelist[$index]]}</h2>";
         }
 
         echo "<table align=\"center\" summary=\"Image View Table\" border=\"0\">";
@@ -823,6 +826,7 @@ else
         // Front page
         echo "<div id='imgbook-front'>";
         if (!empty($imgbook['title'])) echo "<h2 class='imgbook'>{$imgbook['title']}</h2>";
+        if (!empty($imgbook['summary'])) echo "<h4 class='imgbook'>{$imgbook['summary']}</h4>";
         // Information Table
         if ($imagecount > 0)
         {
