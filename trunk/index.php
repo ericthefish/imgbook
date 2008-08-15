@@ -783,8 +783,12 @@ else
         {
             for($i=($j*$dispimages);$i<(($j+1) * $dispimages);$i++)
             {
-                if ($i % $imgbook['imgperrow'] == 0 && $i > 1 && $c < $dispimages) echo "\n<!-- $c/ $dispimages /$imagecount --></tr>\n";
-                if ($c == $dispimages) echo "\n<!--end--></tr>\n";
+                if ($i % $imgbook['imgperrow'] == 0 && $i > 1 && $c < $dispimages) echo "\n<!-- c=$c/ $dispimages /$imagecount --></tr>\n";
+                if ($c == $imagecount)
+                {
+                    echo "\n<!--end--></tr>\n";
+                    break;
+                }
                 if ($i % $imgbook['imgperrow'] == 0) echo "\n<tr>\n";
                 if ($i < $imagecount)
                 {
