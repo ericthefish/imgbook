@@ -206,15 +206,18 @@ function create_img_url($index, $offset='', $sub='', $draw='', $filename='')
             case 'thumb': $url .= 'T'; break;
             case 'full': $url .= 'F'; break;
             case 'normal': $url .= 'N'; break;
+            case '': $url .= ""; break;
         }
+
         $url .= "{$index}";
         if (!empty($filename))
         {
             $extension = explode(".",$filename);
             $extension = strtolower($extension['1']);
-            $url .= ".{$extension}";
+
         }
-        else $url .= ".html";
+        if (empty($draw)) $url .= ".html";
+        else $url .= ".{$extension}";
     }
 
     return $url;
