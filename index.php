@@ -357,14 +357,16 @@ while ( false != ( $file = readdir($dp) ) )
 natcasesort($imagelist);
 foreach ($imagelist AS $key => $val)
 {
-    $imagetmp[]=$imagelist[$key];
+    $imagetmp[] = $imagelist[$key];
 }
-$imagelist=$imagetmp;
+$imagelist = $imagetmp;
+unset($imagetmp);
+
 // sort($imagelist);
-$imagecount=count($imagelist);
+$imagecount = count($imagelist);
 // reset($imagelist);
 
-// print_r($imagelist);
+// echo "<pre>IMGLIST:\n".print_r($imagelist, TRUE)."</pre>";
 
 // Calc number of pages
 if ($imgbook['imgperpage'] == 0) $nrpages=1;
@@ -379,7 +381,24 @@ if (extension_loaded('gd') && $draw == 'full')
 
     // create the image
     // $gif = ImageCreate(200,200);
-    $gfx = ImageCreateFromPNG($imagelist[$index]);
+    $extension = explode(".",$imagelist[$index]);
+    $extension = strtolower($extension['1']);
+    switch ($extension)
+    {
+        case 'jpg':
+        case 'jpeg':
+            $gfx = ImageCreateFromJPEG($imagelist[$index]);
+            break;
+
+        case 'gif':
+            $gfx = ImageCreateFromGIF($imagelist[$index]);
+            break;
+
+        case 'png':
+        default:
+            // The PNG one seems to work for a lot of image types, not sure how that works....
+            $gfx = ImageCreateFromPNG($imagelist[$index]);
+    }
     $bg = ImageColorAllocate($gfx,0,0,0);
     $tx = ImageColorClosest($gfx,255,255,255);
 
@@ -387,7 +406,8 @@ if (extension_loaded('gd') && $draw == 'full')
     $y = imagesy($gfx);
 
     // Only Add Watermark if image is large and watermark is set
-    if (($x >= 500 OR $y >= 500) AND (empty($imgbook['watermark_text'])==FALSE || empty($imgbook['watermark_image'])==FALSE))
+    if (($x >= 500 OR $y >= 500) AND (empty($imgbook['watermark_text']) == FALSE
+        || empty($imgbook['watermark_image']) == FALSE))
     {
         // ImageFilledRectangle($gif,0,0,200,200,$bg);
         if (!empty($imgbook['watermark_image']) && file_exists($imgbook['watermark_image']))
@@ -463,12 +483,12 @@ if (extension_loaded('gd') && $draw == 'full')
     {
         $newx = ($screenx - 50);
         $newy = $screeny;
-        $dst_img=imagecreate($newx, $newy);
+        $dst_img = imagecreate($newx, $newy);
         imagecopyresized($dst_img,$gfx,0,0,0,0,$newx,$newy,imagesx($gfx),imagesy($gfx));
         // send the image
-        header("content-type: image/png");
+        header("content-type: {$mimetype[$extension]}");
         header("Content-Disposition-Type: attachment\r\n");
-        header("Content-Disposition: filename={$imgbook['filename_prefix']}$index{$imgbook['filename_suffix']}.jpg\r\n");
+        header("Content-Disposition: filename={$imgbook['filename_prefix']}$index{$imgbook['filename_suffix']}.{$extension}\r\n");
 
         imagepng($dst_img);
     }
@@ -486,7 +506,7 @@ if (extension_loaded('gd') && $draw == 'full')
         // send the image
         header("content-type: image/png");
         header("Content-Disposition-Type: attachment\r\n");
-        header("Content-Disposition: filename={$imgbook['filename_prefix']}$index{$imgbook['filename_suffix']}.jpg\r\n");
+        header("Content-Disposition: filename={$imgbook['filename_prefix']}$index{$imgbook['filename_suffix']}.png\r\n");
 
         Imagepng($gfx);
     }
@@ -519,7 +539,9 @@ elseif ($draw == 'normal')
 
     if (is_file($imagelist[$index]))
     {
-        header("content-type: image/png");
+        header("content-type: {$mimetype[$extension]}");
+        header("Content-Disposition-Type: attachment\r\n");
+        header("Content-Disposition: filename={$imgbook['filename_prefix']}$index{$imgbook['filename_suffix']}.{$extension}\r\n");
         readfile($imagelist[$index]);
     }
     else
