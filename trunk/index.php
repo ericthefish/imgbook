@@ -214,7 +214,7 @@ function create_img_url($index, $offset='', $sub='', $draw='', $filename='')
             $extension = strtolower($extension['1']);
             $url .= ".{$extension}";
         }
-        else $url .= ".jpg";
+        else $url .= ".html";
     }
 
     return $url;
@@ -313,11 +313,13 @@ if (!empty($_REQUEST['i']))
     else
     {
         $index = substr($filename, 1);
-        switch (substr($filename, 0, 1))
+        switch (strtoupper(substr($filename, 0, 1)))
         {
             case 'N': $draw = 'normal'; break;
             case 'F': $draw = 'full';  break;
             case 'T': $draw = 'thumb'; break;
+            case 'I': $draw = 'index'; $index = 'index'; break;
+            case 'L': $draw = 'list'; $index = 'list'; break;
             default:
                 $draw = 'normal';
         }
@@ -672,7 +674,7 @@ else
         if ($index > 0)
         {
             echo "<td  valign='top' style='padding-top: 200px;'>".draw_thumbnail($index-1);
-            echo "<p class='imgbook-navi'>[<a href='{$_REQUEST['PHP_SELF']}?ind=".($index-1)."&amp;sub=$sub";
+            echo "<p class='imgbook-navi'>[<a href='{$_REQUEST['PHP_SELF']}?i=".($index-1).".html&amp;sub=$sub";
             if ($imgbook['autosizing']) echo "&amp;screenx=$screenx&amp;screeny=$screeny";
             echo "'>previous</a>]</p>";
         }
@@ -738,13 +740,23 @@ else
             echo "</td></tr>\n</table>\n";
         }
 
-        echo "</td>";
+        echo "</td>\n";
         if ($index < $imagecount-1)
         {
             echo "<td valign='top' style='padding-top: 200px; text-align: right;'>".draw_thumbnail($index+1);
             echo "<p class='imgbook-navi'>[<a href='{$_REQUEST['PHP_SELF']}?ind=".($index+1)."&amp;sub=$sub";
             if ($imgbook['autosizing']) echo "&amp;screenx=$screenx&amp;screeny=$screeny";
             echo "'>next</a>]</p>";
+            echo "</td>";
+        }
+        elseif ($index == $imagecount-1)
+        {
+            echo "<td valign='top' style='padding-top: 200px; text-align: right;'>";
+//             echo "<div class='imgbook-thumbframe'>";
+            echo "<div style='width: {$imgbook['thumbnailwidth']}px; height: ".($imgbook['thumbnailheight'] + 6)."px;'>";
+            echo "</div>"; // </div>
+            if (!empty($imgbook['homeurl'])) echo "<p class='imgbook-navi'>[<a href=\"{$imgbook['homeurl']}\">{$imgbook['hometext']}</a>]";
+            echo "</p>";
             echo "</td>";
         }
         echo "</tr>\n";
@@ -861,142 +873,147 @@ else
             echo "{$imagecount} Images";
             echo "</p>";
         }
-    //echo "<tr><th>Date Modified</th><td>".date('d M Y H:i',filemtime($imagelist[$index]))."</td>";
+        //echo "<tr><th>Date Modified</th><td>".date('d M Y H:i',filemtime($imagelist[$index]))."</td>";
 
-    // echo "<p align='center'><a href='{$_SERVER['PHP_SELF']}?ind=0'>Browse Images one at a time</a></p>";
+        // echo "<p align='center'><a href='{$_SERVER['PHP_SELF']}?ind=0'>Browse Images one at a time</a></p>";
 
-    //--- Thumbnails index table
-    if ($imgbook['imgperpage'] == 0 OR $dispimages > $imagecount) $dispimages = $imagecount;
-    else $dispimages = $imgbook['imgperpage'];
-    echo "<table align=\"center\" summary=\"Thumbnails Table\">\n";
-    for($j=0;$j<$nrpages;$j++)
-    {
-        if ( $offset >= ($j*$dispimages) && $offset < (($j+1) * $dispimages))
-        {
-            for($i=($j*$dispimages);$i<(($j+1) * $dispimages);$i++)
-            {
-                if ($i % $imgbook['imgperrow'] == 0 && $i > 1 && $c < $dispimages) echo "\n<!-- c=$c/ $dispimages /$imagecount --></tr>\n";
-                if ($c == $imagecount)
-                {
-                    echo "\n<!--end--></tr>\n";
-                    break;
-                }
-                if ($i % $imgbook['imgperrow'] == 0) echo "\n<tr>\n";
-                if ($i < $imagecount)
-                {
-                    $path = "{$_SERVER['PHP_SELF']}?ind=$i&amp;sub=$sub";
-                    if ($imgbook['autosizing']) $path.="&amp;screenx=$screenx&amp;screeny=$screeny";
-                    echo "<td>";
-                    if ($_REQUEST['sel']!='' AND $_REQUEST['sel']==$i) echo "<div style='border: 1px dashed yellow;'>";
-                    $thumbbasefilename=explode(".",$imagelist[$i]);
-                    if (in_array($thumbbasefilename['1'], $imagetypes))
-                    {
-                        // display thumbnail if we have one, otherwise display big image (with small display dimensions)
-                        //$thumbfilename='t_'.$imagelist[$i];
-                        echo draw_thumbnail($i);
-                    }
-                    else
-                    {
-                        // echo "<a href='$path'>{$imagelist[$i]}</a>";
-                        // non image thumbnail
-                        echo "<table summary='File Link' width='".($imgbook['thumbnailwidth']+3)."' height='".($imgbook['thumbnailheight']+3)."' class='icon'>";
-                        echo "<tr><td valign='center' align='center'>[<a href='$path' title='{$imagelist[$i]}'>{$thumbbasefilename['1']}</a>]</td></tr>\n</table>\n";
-                    }
-                    if ($_REQUEST['sel']!='' AND $_REQUEST['sel']==$i) echo "</div>";
-                    echo "</td>\n";
-                    // tr needed?
-                }
-                $c++;
-            }
-        }
-    }
-    unset($c);
-    echo "</table>\n";
-
-    //---this code generates page links based on the configuration settings---
-    if ($imgbook['imgperpage'] > 0 && $imagecount > $imgbook['imgperpage'])
-    {
-        echo "<p align='center' class='imgbook-navi'>";
+        //--- Thumbnails index table
+        if ($imgbook['imgperpage'] == 0 OR $dispimages > $imagecount) $dispimages = $imagecount;
+        else $dispimages = $imgbook['imgperpage'];
+        echo "<table align=\"center\" summary=\"Thumbnails Table\">\n";
         for($j=0;$j<$nrpages;$j++)
         {
-            echo "[<a href='{$_SERVER['PHP_SELF']}?ind=index&amp;offset=".($j * $imgbook['imgperpage']);
-            if (!empty($sub)) echo "&amp;sub=$sub";
-            if ($imgbook['autosizing']) echo "&amp;screenx=$screenx&amp;screeny=$screeny";
-            echo "'>";
-            if ($_REQUEST['offset']==($j * $imgbook['imgperpage'])) echo "<strong>";
-            echo "page ".($j+1);
-            if ($_REQUEST['offset']==($j * $imgbook['imgperpage'])) echo "</strong>";
-            echo "</a>] ";
-            if ((($j+1) % 10)==0) echo "<br />";
+            if ( $offset >= ($j*$dispimages) && $offset < (($j+1) * $dispimages))
+            {
+                for($i=($j*$dispimages);$i<(($j+1) * $dispimages);$i++)
+                {
+                    if ($i % $imgbook['imgperrow'] == 0 && $i > 1 && $c < $dispimages) echo "\n<!-- c=$c/ $dispimages /$imagecount --></tr>\n";
+                    if ($c == $imagecount)
+                    {
+                        echo "\n<!--end--></tr>\n";
+                        break;
+                    }
+                    if ($i % $imgbook['imgperrow'] == 0) echo "\n<tr>\n";
+                    if ($i < $imagecount)
+                    {
+                        $path = "{$_SERVER['PHP_SELF']}?ind=$i&amp;sub=$sub";
+                        if ($imgbook['autosizing']) $path.="&amp;screenx=$screenx&amp;screeny=$screeny";
+                        echo "<td>";
+                        if ($_REQUEST['sel']!='' AND $_REQUEST['sel']==$i) echo "<div style='border: 1px dashed yellow;'>";
+                        $thumbbasefilename=explode(".",$imagelist[$i]);
+                        if (in_array($thumbbasefilename['1'], $imagetypes))
+                        {
+                            // display thumbnail if we have one, otherwise display big image (with small display dimensions)
+                            //$thumbfilename='t_'.$imagelist[$i];
+                            echo draw_thumbnail($i);
+                        }
+                        else
+                        {
+                            // echo "<a href='$path'>{$imagelist[$i]}</a>";
+                            // non image thumbnail
+                            echo "<table summary='File Link' width='".($imgbook['thumbnailwidth']+3)."' height='".($imgbook['thumbnailheight']+3)."' class='icon'>";
+                            echo "<tr><td valign='center' align='center'>[<a href='$path' title='{$imagelist[$i]}'>{$thumbbasefilename['1']}</a>]</td></tr>\n</table>\n";
+                        }
+                        if ($_REQUEST['sel']!='' AND $_REQUEST['sel']==$i) echo "</div>";
+                        echo "</td>\n";
+                        // tr needed?
+                    }
+                    $c++;
+                }
+            }
         }
-        echo "</p>";
-    }
-    
-    echo "<br />";
+        unset($c);
+        echo "</table>\n";
 
-    if ($imgbook['subdirs'])
-    {
-        echo "<div style='width: 40%; text-align: left; margin-left: auto; margin-right: auto;'>";
-        // echo "<h3>Galleries:</h3>";
-        echo list_galleries($currentdir, 0, 0, '');
+        //---this code generates page links based on the configuration settings---
+        if ($imgbook['imgperpage'] > 0 && $imagecount > $imgbook['imgperpage'])
+        {
+            echo "<p align='center' class='imgbook-navi'>";
+            for($j=0;$j<$nrpages;$j++)
+            {
+                echo "[<a href='{$_SERVER['PHP_SELF']}?ind=index&amp;offset=".($j * $imgbook['imgperpage']);
+                if (!empty($sub)) echo "&amp;sub=$sub";
+                if ($imgbook['autosizing']) echo "&amp;screenx=$screenx&amp;screeny=$screeny";
+                echo "'>";
+                if ($_REQUEST['offset']==($j * $imgbook['imgperpage'])) echo "<strong>";
+                echo "page ".($j+1);
+                if ($_REQUEST['offset']==($j * $imgbook['imgperpage'])) echo "</strong>";
+                echo "</a>] ";
+                if ((($j+1) % 10)==0) echo "<br />";
+            }
+            echo "</p>";
+        }
+        
+        echo "<br />";
+
+        if ($imgbook['subdirs'])
+        {
+            echo "<div style='width: 40%; text-align: left; margin-left: auto; margin-right: auto;'>";
+            // echo "<h3>Galleries:</h3>";
+            echo list_galleries($currentdir, 0, 0, '');
+            echo "</div>";
+        }
         echo "</div>";
     }
-    echo "</div>";
-}
 
 
-
-echo "<form action='{$_SERVER['PHP_SELF']}' name='resform' id='resform' method='get'>\n";
-echo "<input type='hidden' name='screenx' id='screenx' value='800' />";
-echo "<input type='hidden' name='screeny' value='600' />";
-echo "<input type='hidden' name='ind' value='$ind' />";
-echo "<input type='hidden' name='sub' value='$sub' />";
-// echo "<input type='submit' name='AutoSize' />";
-echo "<p align='center' class='imgbook-navi'>";
-if ($_REQUEST['ind']!='index')
-{
-    $offset=0;
-    for($j=1;$j<=$nrpages;$j++)
+    echo "<form action='{$_SERVER['PHP_SELF']}' name='resform' id='resform' method='get'>\n";
+    echo "<input type='hidden' name='screenx' id='screenx' value='800' />";
+    echo "<input type='hidden' name='screeny' value='600' />";
+    echo "<input type='hidden' name='ind' value='$ind' />";
+    echo "<input type='hidden' name='sub' value='$sub' />";
+    // echo "<input type='submit' name='AutoSize' />";
+    echo "<p align='center' class='imgbook-navi'>";
+    if ($_REQUEST['ind']!='index')
     {
-        if (($j * $imgbook['imgperpage']) <= $index
-        AND ($j * $imgbook['imgperpage']) < (($index-1) + $imgbook['imgperpage'])) $offset=($j * $imgbook['imgperpage']);
+        $offset=0;
+        for($j=1;$j<=$nrpages;$j++)
+        {
+            if (($j * $imgbook['imgperpage']) <= $index
+            AND ($j * $imgbook['imgperpage']) < (($index-1) + $imgbook['imgperpage'])) $offset=($j * $imgbook['imgperpage']);
+        }
+        if ($index === 0 OR is_numeric($index) OR $index == 'list')
+        {
+            echo " [<a href='{$_REQUEST['PHP_SELF']}?i=index-s{$sub}-se{$sel}-o{$offset}.html&amp;sub=$sub&amp;sel=$index&amp;offset=$offset'>";
+            if (!empty($imgbook['title'])) echo "{$imgbook['title']} ";
+            echo "Thumbnails</a>] &nbsp;";
+        }
     }
-    if ($index === 0 OR is_numeric($index) OR $index == 'list') echo " [<a href='{$_REQUEST['PHP_SELF']}?ind=index&amp;sub=$sub&amp;sel=$index&amp;offset=$offset'>Thumbnails</a>] &nbsp;";
-}
-if ($_REQUEST['ind']!='list') echo " [<a href='{$_REQUEST['PHP_SELF']}?ind=list&amp;sub=$sub#$index'>List</a>]";
-if (!empty($imgbook['homeurl'])) echo " &nbsp;[<a href=\"{$imgbook['homeurl']}\">{$imgbook['hometext']}</a>]";
-if ($imgbook['autosizing'])
-{
-    if ($screenx < 10) echo " | [<a href=\"javascript:document.resform.submit();\">AutoSize</a>]";
-    else echo " | [<a href=\"$PHP_SELF?ind=$ind&amp;sub=$sub\">Disable AutoSize</a>]";
-}
-echo "</p>";
-echo "</form>";
-if ($imgbook['poweredby']) echo "<p align='center' style='font-size: 12px; color: #ccc;' class='imgbook-poweredby'>Powered by ImgBook v{$version}</p>";
-echo "<script language=\"JavaScript\" type=\"text/javascript\"><!--\n";
-echo "var height, width;\n";
-echo "if (document.all)\n";  // IE
-echo "{\n";
-echo "  resform.screenx.value = document.body.offsetWidth;\n";
-echo "  resform.screeny.value = document.body.offsetHeight;\n";
-// echo "  resform.screenx.value = 555; ";
-echo "}\n";
-echo "else "; //if (document.layers)\n";
-echo "{\n";
-echo "  document.resform.screenx.value = window.innerWidth;\n";
-echo "  document.resform.screeny.value = window.innerHeight;\n";
-// echo "  document.resform.screeny.value = 666;";
-echo "}\n";
-echo "//--></script>\n";
+    // &amp;sub=$sub
+    if ($index != 'list') echo " [<a href='{$_REQUEST['PHP_SELF']}?i=list.html#$index'>List</a>]";
+    if (!empty($imgbook['homeurl'])) echo " &nbsp;[<a href=\"{$imgbook['homeurl']}\">{$imgbook['hometext']}</a>]";
+    if ($imgbook['autosizing'])
+    {
+        if ($screenx < 10) echo " | [<a href=\"javascript:document.resform.submit();\">AutoSize</a>]";
+        else echo " | [<a href=\"$PHP_SELF?ind=$ind&amp;sub=$sub\">Disable AutoSize</a>]";
+    }
+    echo "</p>";
+    echo "</form>";
+    if ($imgbook['poweredby']) echo "<p align='center' style='font-size: 12px; color: #ccc;' class='imgbook-poweredby'>Powered by ImgBook v{$version}</p>";
+    echo "<script language=\"JavaScript\" type=\"text/javascript\"><!--\n";
+    echo "var height, width;\n";
+    echo "if (document.all)\n";  // IE
+    echo "{\n";
+    echo "  resform.screenx.value = document.body.offsetWidth;\n";
+    echo "  resform.screeny.value = document.body.offsetHeight;\n";
+    // echo "  resform.screenx.value = 555; ";
+    echo "}\n";
+    echo "else "; //if (document.layers)\n";
+    echo "{\n";
+    echo "  document.resform.screenx.value = window.innerWidth;\n";
+    echo "  document.resform.screeny.value = window.innerHeight;\n";
+    // echo "  document.resform.screeny.value = 666;";
+    echo "}\n";
+    echo "//--></script>\n";
 
-echo "</div>";
-if (!empty($imgbook['footer']))
-{
-    include($imgbook['footer']);
-}
-else
-{
-    echo "\n</body>\n</html>\n";
-}
+    echo "</div>";
+    if (!empty($imgbook['footer']))
+    {
+        include($imgbook['footer']);
+    }
+    else
+    {
+        echo "\n</body>\n</html>\n";
+    }
 }
 ?>
