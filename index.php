@@ -939,7 +939,7 @@ if ($_REQUEST['ind']!='index')
         if (($j * $imgbook['imgperpage']) <= $index
         AND ($j * $imgbook['imgperpage']) < (($index-1) + $imgbook['imgperpage'])) $offset=($j * $imgbook['imgperpage']);
     }
-    echo " [<a href='{$_REQUEST['PHP_SELF']}?ind=index&amp;sub=$sub&amp;sel=$index&amp;offset=$offset'>Back to index</a>] &nbsp;";
+    if ($index === 0 OR is_numeric($index) OR $index == 'list') echo " [<a href='{$_REQUEST['PHP_SELF']}?ind=index&amp;sub=$sub&amp;sel=$index&amp;offset=$offset'>Thumbnails</a>] &nbsp;";
 }
 if ($_REQUEST['ind']!='list') echo " [<a href='{$_REQUEST['PHP_SELF']}?ind=list&amp;sub=$sub#$index'>List</a>]";
 if (!empty($imgbook['homeurl'])) echo " &nbsp;[<a href=\"{$imgbook['homeurl']}\">{$imgbook['hometext']}</a>]";
