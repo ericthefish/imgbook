@@ -257,6 +257,7 @@ function draw_thumbnail($index)
     return $html;
 }
 
+
 function list_galleries($dirname, $level, $recursive = 1, $content = '')
 {
     global $imgbook;
@@ -267,7 +268,10 @@ function list_galleries($dirname, $level, $recursive = 1, $content = '')
     $dirname.=$delim;
 
     $handle = opendir($dirname);
-    if ($handle==FALSE) trigger_error("Error opening directory: {$dirname}",E_USER_ERROR);
+    if ($handle==FALSE)
+    {
+        trigger_error("Error opening directory: {$dirname}", E_USER_ERROR);
+    }
     else
     {
         $filecount=0;
@@ -425,57 +429,57 @@ if (extension_loaded('gd') && $draw == 'full')
             switch ($imgbook['watermark_position'])
             {
                 case 'center':
-                $draw_x = ( $x / 2 ) - ( $wmkx / 2 );
-                $draw_y = ( $y / 2 ) - ( $wmky / 2 );
+                    $draw_x = ( $x / 2 ) - ( $wmkx / 2 );
+                    $draw_y = ( $y / 2 ) - ( $wmky / 2 );
                 break;
 
                 case 'top-left':
-                $draw_x = 0;
-                $draw_y = 0;
+                    $draw_x = 0;
+                    $draw_y = 0;
                 break;
 
                 case 'top-right':
-                $draw_x = $x - $wmkx;
-                $draw_y = 0;
+                    $draw_x = $x - $wmkx;
+                    $draw_y = 0;
                 break;
 
                 case 'bottom-right':
-                $draw_x = $x - $wmkx;
-                $draw_y = $y - $wmky;
+                    $draw_x = $x - $wmkx;
+                    $draw_y = $y - $wmky;
                 break;
 
                 case 'bottom-left':
-                $draw_x = 0;
-                $draw_y = $y - $wmky;
+                    $draw_x = 0;
+                    $draw_y = $y - $wmky;
                 break;
 
                 case 'top-center':
-                $draw_x = ( ( $x - $wmkx ) / 2 );
-                $draw_y = 0;
+                    $draw_x = ( ( $x - $wmkx ) / 2 );
+                    $draw_y = 0;
                 break;
 
                 case 'center-right':
-                $draw_x = $x - $wmkx;
-                $draw_y = ( $y / 2 ) - ( $wmky / 2 );
+                    $draw_x = $x - $wmkx;
+                    $draw_y = ( $y / 2 ) - ( $wmky / 2 );
                 break;
 
                 case 'bottom-center':
-                $draw_x = ( ( $x - $wmkx ) / 2 );
-                $draw_y = $y - $wmky;
+                    $draw_x = ( ( $x - $wmkx ) / 2 );
+                    $draw_y = $y - $wmky;
                 break;
 
                 case 'center-left':
-                $draw_x = 0;
-                $draw_y = ( $y / 2 ) - ( $wmky / 2 );
+                    $draw_x = 0;
+                    $draw_y = ( $y / 2 ) - ( $wmky / 2 );
                 break;
 
                 default:
-                $draw_x = ( $x / 2 ) - ( $wmkx / 2 );
-                $draw_y = ( $y / 2 ) - ( $wmky / 2 );
+                    $draw_x = ( $x / 2 ) - ( $wmkx / 2 );
+                    $draw_y = ( $y / 2 ) - ( $wmky / 2 );
                 break;
             }
             // The main thing : merge the two pix
-            imageCopyMerge($gfx, $wmk,$draw_x,$draw_y,0,0,$wmkx,$wmky,$imgbook['watermark_opacity']);
+            imageCopyMerge($gfx, $wmk, $draw_x, $draw_y, 0, 0, $wmkx, $wmky, $imgbook['watermark_opacity']);
         }
         else
         {
@@ -489,7 +493,7 @@ if (extension_loaded('gd') && $draw == 'full')
         $newx = ($screenx - 50);
         $newy = $screeny;
         $dst_img = imagecreate($newx, $newy);
-        imagecopyresized($dst_img,$gfx,0,0,0,0,$newx,$newy,imagesx($gfx),imagesy($gfx));
+        imagecopyresized($dst_img, $gfx, 0, 0, 0, 0,$newx, $newy, imagesx($gfx), imagesy($gfx));
         // send the image
         header("content-type: {$mimetype[$extension]}");
         header("Content-Disposition-Type: attachment\r\n");
@@ -522,8 +526,8 @@ elseif (extension_loaded('gd') && $draw == 'thumb')
     if (is_file($imagelist[$index]))
     {
         header("content-type: image/png");
-        $dst_img=imagecreatetruecolor($imgbook['thumbnailwidth'], $imgbook['thumbnailheight']);
-        $src_img=imagecreatefrompng($imagelist[$index]);
+        $dst_img = imagecreatetruecolor($imgbook['thumbnailwidth'], $imgbook['thumbnailheight']);
+        $src_img = imagecreatefrompng($imagelist[$index]);
         imagecopyresized($dst_img,$src_img,0,0,0,0,$imgbook['thumbnailwidth'],$imgbook['thumbnailheight'],imagesx($src_img),imagesy($src_img));
 
         if (!$dst_img)
@@ -540,8 +544,9 @@ elseif (extension_loaded('gd') && $draw == 'thumb')
 }
 elseif ($draw == 'normal')
 {
-//     check_referrer();
+    // Pass Through
 
+    //     check_referrer();
     if (is_file($imagelist[$index]))
     {
         header("content-type: {$mimetype[$extension]}");
@@ -671,6 +676,10 @@ else
             //echo "<div style='font-size: 180%; padding-left: 50px; padding-right: 50px; padding-bottom: 5px; text-align: center; color: #9AD7F5;'>{$descindex[$imagelist[$index]]}</div>";
             echo "<h2 class='imgbook'>{$descindex[$imagelist[$index]]}</h2>";
         }
+        else
+        {
+            echo "<h2 class='imgbook'>{$imgbook['title']}</h2>";
+        }
 
         echo "<table align=\"center\" summary=\"Image View Table\" border=\"0\">";
         echo "<tr>";
@@ -772,8 +781,8 @@ else
         echo "<table align='center' class='info' border='0' width='50%'>";
 
         // Get the image description if there is one, same filename but a .txt extension
-        $basefilename=$basefilename['0'];
-        $txtfilename=$basefilename.'.txt';
+        $basefilename = $basefilename['0'];
+        $txtfilename = $basefilename.'.txt';
         if (file_exists($txtfilename))
         {
             echo "<tr><th>Description</th><td>";
