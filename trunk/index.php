@@ -128,7 +128,7 @@ $imgbook['imagetypes']       = "jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG,bmp,BMP";
 $imgbook['downloadtypes']    = "mp3,wav,avi,mpg,swf,fla,zip,rar,psd,htm,html,exe,doc,xar,p,bsp";
 $imgbook['homeurl']          = "";
 $imgbook['hometext']         = "Back to Website";
-$imgbook['okreferrers']      = "www.example.com,example.com";
+$imgbook['okreferrers']      = "localhost,127.0.0.1";
 $imgbook['stylesheet']       = "";
 $imgbook['banrobots']        = TRUE;
 $imgbook['filename_prefix']  = "imgbook-";
@@ -546,7 +546,7 @@ elseif ($draw == 'normal')
 {
     // Pass Through
 
-    //     check_referrer();
+    check_referrer();
     if (is_file($imagelist[$index]))
     {
         header("content-type: {$mimetype[$extension]}");
