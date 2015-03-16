@@ -1,0 +1,1 @@
+Easy to use image gallery using a single php script, simply put the file index.php into a directory with some images.
